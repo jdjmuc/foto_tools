@@ -215,4 +215,5 @@ def rename_image_with_exif_date_with_options(image_path, dry_run=False, prefix="
         return False
 
 if __name__ == "__main__":
-    exit(main())
+    import sys
+    sys.exit(main())
