@@ -68,7 +68,9 @@ def main():
   %(prog)s /path/to/photos
   %(prog)s ~/Pictures/vacation --dry-run
   %(prog)s . --extensions jpg png heic
-  %(prog)s /photos --prefix "vacation" --dry-run"""
+  %(prog)s /photos --prefix "vacation" --dry-run
+  %(prog)s /photos --recursive --dry-run
+  %(prog)s ~/Pictures -r --prefix "trip"""
     )
     
     parser.add_argument(
@@ -95,6 +97,12 @@ def main():
         help="Prefix for renamed files (default: photo, resulting in photo_YYYYMMDD_HHMMSS.ext)"
     )
     
+    parser.add_argument(
+        "-r", "--recursive",
+        action="store_true",
+        help="Recursively process all subdirectories"
+    )
+    
     args = parser.parse_args()
     
     # Validate directory
@@ -108,12 +116,32 @@ def main():
     if args.dry_run:
         print("DRY RUN MODE - No files will be renamed")
         print(f"Would process files with extensions: {', '.join(extensions)}")
+        if args.recursive:
+            print("Would process recursively in all subdirectories")
         print()
     
-    process_directory_with_options(args.directory, extensions, args.dry_run, args.prefix)
+    process_directory_with_options(args.directory, extensions, args.dry_run, args.prefix, args.recursive)
     return 0
 
-def process_directory_with_options(directory_path, extensions, dry_run=False, prefix="photo"):
+def process_file_if_image(file_path, filename, extensions, dry_run, prefix):
+    """
+    Process a file if it's an image with a matching extension.
+    
+    Args:
+        file_path (str): The full path to the file.
+        filename (str): The filename.
+        extensions (tuple): Tuple of extensions to match.
+        dry_run (bool): If True, show what would be renamed without actually renaming.
+        prefix (str): Prefix for renamed files.
+        
+    Returns:
+        bool: True if file was processed, False otherwise.
+    """
+    if os.path.isfile(file_path) and filename.lower().endswith(extensions):
+        return rename_image_with_exif_date_with_options(file_path, dry_run, prefix)
+    return False
+
+def process_directory_with_options(directory_path, extensions, dry_run=False, prefix="photo", recursive=False):
     """
     Processes all image files in a given directory to rename them with EXIF date.
     
@@ -122,26 +150,36 @@ def process_directory_with_options(directory_path, extensions, dry_run=False, pr
         extensions (tuple): Tuple of file extensions to process.
         dry_run (bool): If True, show what would be renamed without actually renaming.
         prefix (str): Prefix for renamed files.
+        recursive (bool): If True, process subdirectories recursively.
     """
     if not os.path.isdir(directory_path):
         print(f"Error: Directory not found at '{directory_path}'")
         return
 
     print(f"Processing images in: {directory_path}")
+    if recursive:
+        print("Mode: Recursive (processing all subdirectories)")
     processed_count = 0
     skipped_count = 0
     
-    for filename in os.listdir(directory_path):
-        file_path = os.path.join(directory_path, filename)
-        # Check if it's a file and has one of the specified extensions
-        if os.path.isfile(file_path) and filename.lower().endswith(extensions):
-            if rename_image_with_exif_date_with_options(file_path, dry_run, prefix):
+    if recursive:
+        # Use os.walk for recursive directory traversal
+        for root, _, files in os.walk(directory_path):
+            print(f"  Scanning: {root}")
+            for filename in files:
+                file_path = os.path.join(root, filename)
+                if process_file_if_image(file_path, filename, extensions, dry_run, prefix):
+                    processed_count += 1
+                else:
+                    skipped_count += 1
+    else:
+        # Process only the specified directory (non-recursive)
+        for filename in os.listdir(directory_path):
+            file_path = os.path.join(directory_path, filename)
+            if process_file_if_image(file_path, filename, extensions, dry_run, prefix):
                 processed_count += 1
             else:
                 skipped_count += 1
-        else:
-            print(f"Skipping non-image file or directory: {filename}")
-            skipped_count += 1
     
     print(f"\nProcessing complete. Processed: {processed_count}, Skipped: {skipped_count}")
 

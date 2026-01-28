@@ -30,9 +30,9 @@ print(f"Using main script: {main_script}")
 try:
     PyInstaller.__main__.run(args)
     exec_path = os.path.join(script_dir, 'dist', 'exif-date-rename')
-    print(f"\n✓ Build successful!")
+    print("\n✓ Build successful!")
     print(f"✓ Executable created at: {exec_path}")
-    print(f"\nUsage:")
+    print("\nUsage:")
     print(f"  {exec_path} --help")
 except Exception as e:
     print(f"\n✗ Build failed: {e}")
