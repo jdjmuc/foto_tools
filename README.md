@@ -15,8 +15,8 @@ You can either use the Python script directly or build a standalone executable.
 Requires Python 3.7+ and dependencies:
 
 ```bash
-pip install -r requirements.txt
-python3 exif-date-rename.py /path/to/photos
+pip install -r apps/exif-date-rename/requirements.txt
+python3 apps/exif-date-rename/exif-date-rename.py /path/to/photos
 ```
 
 #### Option 2: Standalone Executable
@@ -39,21 +39,13 @@ exif-date-rename /photos --prefix "vacation" --dry-run    # Custom prefix
 
 ## Building the Executable
 
-This project includes a PyInstaller build script to create a compact, single-file Linux executable.
-
-### Prerequisites
-
-The build script uses your virtual environment. Ensure you have:
-- Python 3.14 development libraries: `libpython3.14-dev` (installed via apt if needed)
-- PyInstaller installed in your venv (already in requirements if you've set up the project)
+This project includes a PyInstaller build script that creates compact, single-file Linux executables for the apps in `apps/`. See [BUILD.md](BUILD.md) for details.
 
 ### Building
 
-From the project root, activate the virtual environment and run the build script:
-
 ```bash
 source venv/bin/activate
-python3 build_executable.py
+python3 build_executable.py --install-deps exif-date-rename
 ```
 
 The executable will be created at: `dist/exif-date-rename`
