@@ -25,6 +25,7 @@ import os
 import shutil
 import subprocess
 import sys
+from typing import TypedDict
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 APPS_DIR = os.path.join(SCRIPT_DIR, 'apps')
@@ -33,9 +34,14 @@ BUILD_DIR = os.path.join(SCRIPT_DIR, 'build')
 PYTHON_VERSION = '3.15'
 
 
-def discover_apps():
+class AppInfo(TypedDict):
+    entry: str
+    requirements: str | None
+
+
+def discover_apps() -> dict[str, AppInfo]:
     """Return {name: info} for every apps/<name>/<name>.py entry script."""
-    apps = {}
+    apps: dict[str, AppInfo] = {}
     if not os.path.isdir(APPS_DIR):
         return apps
     for name in sorted(os.listdir(APPS_DIR)):
@@ -50,7 +56,7 @@ def discover_apps():
     return apps
 
 
-def require_uv():
+def require_uv() -> str:
     """Return the path to uv, or exit if it is not on PATH."""
     uv = shutil.which('uv')
     if not uv:
@@ -59,7 +65,7 @@ def require_uv():
     return uv
 
 
-def app_env_python(name):
+def app_env_python(name: str) -> str:
     """Path to the Python executable of an app's environment apps/<name>/.venv."""
     env_dir = os.path.join(APPS_DIR, name, '.venv')
     if sys.platform == 'win32':
@@ -67,7 +73,7 @@ def app_env_python(name):
     return os.path.join(env_dir, 'bin', 'python')
 
 
-def setup_env(uv, name, info):
+def setup_env(uv: str, name: str, info: AppInfo) -> str | None:
     """Create (if needed) and sync apps/<name>/.venv. Returns its Python path, or None on failure."""
     env_python = app_env_python(name)
     env_dir = os.path.dirname(os.path.dirname(env_python))
@@ -85,7 +91,7 @@ def setup_env(uv, name, info):
     return env_python
 
 
-def build_app(name, info, env_python):
+def build_app(name: str, info: AppInfo, env_python: str) -> bool:
     """Build a single-file executable for one app with its environment. Returns True on success."""
     print(f"\n=== Building {name} ===")
     print(f"Using entry script: {info['entry']}")
@@ -117,7 +123,7 @@ def build_app(name, info, env_python):
     return True
 
 
-def main():
+def main() -> None:
     apps = discover_apps()
 
     parser = argparse.ArgumentParser(description='Build executables for the apps in apps/.')
@@ -144,7 +150,7 @@ def main():
     selected = args.names or list(apps)
     uv = require_uv()
 
-    failed = []
+    failed: list[str] = []
     for name in selected:
         info = apps[name]
         env_python = setup_env(uv, name, info)

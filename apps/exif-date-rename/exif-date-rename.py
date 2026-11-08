@@ -8,7 +8,7 @@ from PIL.ExifTags import TAGS
 import datetime
 from typing import Optional, Dict, Any
 
-def get_exif_data(image_path: str) -> Optional[Dict[str, Any]]:
+def get_exif_data(image_path: str) -> Optional[Dict[str | int, Any]]:
     """
     Extracts EXIF data from an image file.
 
@@ -25,7 +25,7 @@ def get_exif_data(image_path: str) -> Optional[Dict[str, Any]]:
             if exif_data is None:
                 return None
 
-            decoded_exif = {}
+            decoded_exif: Dict[str | int, Any] = {}
             for tag_id, value in exif_data.items():
                 tag = TAGS.get(tag_id, tag_id)
                 decoded_exif[tag] = value
@@ -57,7 +57,7 @@ def is_already_renamed(filename: str, prefix: str) -> bool:
     
     return bool(re.match(pattern, name_without_ext))
 
-def main():
+def main() -> int:
     """
     Main function to handle CLI arguments and run the photo renaming process.
     """
@@ -123,7 +123,7 @@ def main():
     process_directory_with_options(args.directory, extensions, args.dry_run, args.prefix, args.recursive)
     return 0
 
-def process_file_if_image(file_path, filename, extensions, dry_run, prefix):
+def process_file_if_image(file_path: str, filename: str, extensions: tuple[str, ...], dry_run: bool, prefix: str) -> bool:
     """
     Process a file if it's an image with a matching extension.
     
@@ -141,7 +141,7 @@ def process_file_if_image(file_path, filename, extensions, dry_run, prefix):
         return rename_image_with_exif_date_with_options(file_path, dry_run, prefix)
     return False
 
-def process_directory_with_options(directory_path, extensions, dry_run=False, prefix="photo", recursive=False):
+def process_directory_with_options(directory_path: str, extensions: tuple[str, ...], dry_run: bool = False, prefix: str = "photo", recursive: bool = False) -> None:
     """
     Processes all image files in a given directory to rename them with EXIF date.
     
@@ -183,7 +183,7 @@ def process_directory_with_options(directory_path, extensions, dry_run=False, pr
     
     print(f"\nProcessing complete. Processed: {processed_count}, Skipped: {skipped_count}")
 
-def rename_image_with_exif_date_with_options(image_path, dry_run=False, prefix="photo"):
+def rename_image_with_exif_date_with_options(image_path: str, dry_run: bool = False, prefix: str = "photo") -> bool:
     """
     Renames an image file using the format {prefix}_YYYYMMDD_HHMMSS.{ext}
     based on EXIF DateTime data. Handles naming collisions by
