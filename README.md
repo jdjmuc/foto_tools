@@ -37,6 +37,21 @@ exif-date-rename /photos --prefix "vacation" --dry-run    # Custom prefix
 - `--extensions` - File extensions to process (default: png jpg jpeg tiff tif heic)
 - `--prefix` - Prefix for renamed files (default: photo)
 
+## digikam-tag-dedupe
+
+Merges a top-level digiKam tag into the unique nested tag with the exact same
+name. It preserves image assignments and tag properties, and leaves ambiguous
+matches unchanged.
+
+```bash
+python3 apps/digikam-tag-dedupe/digikam-tag-dedupe.py
+python3 apps/digikam-tag-dedupe/digikam-tag-dedupe.py /path/to/digikam4.db --apply
+```
+
+The first command is a read-only preview (the database defaults to
+`data/digikam4.db`). Close digiKam before applying changes. `--apply` creates a
+timestamped database backup before merging; review the preview before using it.
+
 ## Building the Executable
 
 This project includes a PyInstaller build script that creates compact, single-file Linux executables for the apps in `apps/`. See [BUILD.md](BUILD.md) for details.
